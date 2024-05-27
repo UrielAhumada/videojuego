@@ -14,8 +14,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const imgElemento = new Image();
     imgElemento.src = 'assets/images/elemento.png';
     const imgElementoClick = new Image();
-    imgElementoClick.src = 'assets/images/explocion.png';
+    imgElementoClick.src = 'assets/images/elemento_click.png';
 
+    // Función para agregar un nuevo elemento
     function addElemento() {
         if (elementosPorNivel < elementosPorNivelLimite) {
             const x = Math.random() * (canvas.width - 100);
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
+    // Función para detectar colisiones entre dos elementos
     function detectCollision(el1, el2) {
         const distX = el1.x - el2.x;
         const distY = el1.y - el2.y;
@@ -34,6 +36,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return distance < 100;
     }
 
+    // Función para resolver las colisiones entre dos elementos
     function resolveCollision(el1, el2) {
         const dx = el1.x - el2.x;
         const dy = el1.y - el2.y;
@@ -47,6 +50,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         el2.velocidadY = Math.abs(speed1 * Math.sin(collisionAngle + Math.PI)); // Asegurar que siempre sea positivo
     }
 
+    // Función para actualizar la posición de los elementos
     function updateElementos() {
         elementos.forEach((elemento, index) => {
             elemento.x += elemento.velocidadX;
@@ -57,10 +61,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 elemento.velocidadX = -elemento.velocidadX;
             }
 
+            // Si un elemento pasa el borde superior, termina el juego
             if (elemento.y < -100) {
                 gameOver = true;
             }
 
+            // Detección de colisiones con otros elementos
             for (let i = index + 1; i < elementos.length; i++) {
                 if (detectCollision(elemento, elementos[i])) {
                     resolveCollision(elemento, elementos[i]);
@@ -69,6 +75,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
+    // Función para dibujar los elementos en el canvas
     function drawElementos() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         elementos.forEach((elemento) => {
@@ -78,6 +85,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         drawHUD();
     }
 
+    // Función para dibujar el HUD (Score, Level, High Score)
     function drawHUD() {
         ctx.fillStyle = 'white';
         ctx.font = '20px Arial';
@@ -86,6 +94,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         ctx.fillText(`High Score: ${highScore}`, 10, canvas.height - 10);
     }
 
+    // Función para dibujar el mensaje de Game Over
     function drawGameOver() {
         ctx.fillStyle = 'red';
         ctx.font = '50px Arial';
@@ -94,6 +103,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + 40);
     }
 
+    // Función para reiniciar el juego
     function resetGame() {
         score = 0;
         level = 1;
@@ -106,6 +116,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         requestAnimationFrame(gameLoop);
     }
 
+    // Bucle principal del juego
     function gameLoop() {
         if (!gameOver) {
             updateElementos();
@@ -116,6 +127,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
+    // Manejo del clic del ratón
     canvas.addEventListener('click', (event) => {
         if (gameOver) {
             resetGame();
@@ -144,12 +156,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
+    // Función para actualizar el intervalo de aparición de elementos
     function updateSpawnInterval() {
         clearInterval(spawnTimer);
         spawnInterval /= 2;
         spawnTimer = setInterval(addElemento, spawnInterval);
     }
 
+    // Inicialización del juego
     spawnTimer = setInterval(addElemento, spawnInterval);
     requestAnimationFrame(gameLoop);
 });
