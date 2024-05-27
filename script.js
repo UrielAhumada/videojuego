@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const imgElemento = new Image();
     imgElemento.src = 'assets/images/elemento.png';
     const imgElementoClick = new Image();
-    imgElementoClick.src = 'assets/images/elemento_click.png';
+    imgElementoClick.src = 'assets/images/explocion.png';
 
     // Función para agregar un nuevo elemento
     function addElemento() {
