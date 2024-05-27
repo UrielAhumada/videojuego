@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         });
     }
-
+    
     // Función para dibujar los elementos en el canvas
     function drawElementos() {
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas en cada fotograma
