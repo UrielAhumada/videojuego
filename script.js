@@ -4,36 +4,76 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let score = 0;
     let level = 1;
     let highScore = localStorage.getItem('highScore') || 0;
-    let spawnInterval = 1000; // Intervalo de aparición de elementos (en ms)
+    let spawnInterval = 1000;
     let spawnTimer;
     let elementosPorNivel = 0;
-    const elementosPorNivelLimite = 10; // Número máximo de elementos por nivel
+    const elementosPorNivelLimite = 10;
     let gameOver = false;
 
     const elementos = [];
     const imgElemento = new Image();
     imgElemento.src = 'assets/images/elemento.png';
     const imgElementoClick = new Image();
-    imgElementoClick.src = 'assets/images/explocion.png'; // Imagen al hacer clic
+    imgElementoClick.src = 'assets/images/explocion.png';
 
     function addElemento() {
         if (elementosPorNivel < elementosPorNivelLimite) {
-            const x = Math.random() * (canvas.width - 100); // Considerar el tamaño del elemento
-            const y = canvas.height + 50; // Generar justo antes del borde inferior
-            elementos.push({ x, y, clicked: false });
+            const x = Math.random() * (canvas.width - 100);
+            const y = canvas.height + 50;
+            const velocidadX = (Math.random() - 0.5) * 4;
+            const velocidadY = 2 + Math.random();
+            elementos.push({ x, y, velocidadX, velocidadY, clicked: false });
             elementosPorNivel++;
         }
     }
 
+    function detectCollision(el1, el2) {
+        const distX = el1.x - el2.x;
+        const distY = el1.y - el2.y;
+        const distance = Math.sqrt(distX * distX + distY * distY);
+        return distance < 100;
+    }
+
+    function resolveCollision(el1, el2) {
+        const dx = el1.x - el2.x;
+        const dy = el1.y - el2.y;
+        const collisionAngle = Math.atan2(dy, dx);
+        const speed1 = Math.sqrt(el1.velocidadX * el1.velocidadX + el1.velocidadY * el1.velocidadY);
+        const speed2 = Math.sqrt(el2.velocidadX * el2.velocidadX + el2.velocidadY * el2.velocidadY);
+
+        el1.velocidadX = speed2 * Math.cos(collisionAngle);
+        el1.velocidadY = Math.abs(speed2 * Math.sin(collisionAngle)); // Asegurar que siempre sea positivo
+        el2.velocidadX = speed1 * Math.cos(collisionAngle + Math.PI);
+        el2.velocidadY = Math.abs(speed1 * Math.sin(collisionAngle + Math.PI)); // Asegurar que siempre sea positivo
+    }
+
+    function updateElementos() {
+        elementos.forEach((elemento, index) => {
+            elemento.x += elemento.velocidadX;
+            elemento.y -= elemento.velocidadY;
+
+            // Rebote en los bordes laterales
+            if (elemento.x <= 0 || elemento.x >= canvas.width - 100) {
+                elemento.velocidadX = -elemento.velocidadX;
+            }
+
+            if (elemento.y < -100) {
+                gameOver = true;
+            }
+
+            for (let i = index + 1; i < elementos.length; i++) {
+                if (detectCollision(elemento, elementos[i])) {
+                    resolveCollision(elemento, elementos[i]);
+                }
+            }
+        });
+    }
+
     function drawElementos() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        elementos.forEach((elemento, index) => {
+        elementos.forEach((elemento) => {
             const img = elemento.clicked ? imgElementoClick : imgElemento;
-            ctx.drawImage(img, elemento.x, elemento.y, 100, 100); // Aumentar tamaño
-            elemento.y -= 2; // Desplazamiento vertical hacia arriba
-            if (elemento.y < -100) { // Desaparece al pasar el borde superior
-                gameOver = true; // Detener el juego
-            }
+            ctx.drawImage(img, elemento.x, elemento.y, 100, 100);
         });
         drawHUD();
     }
@@ -50,7 +90,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         ctx.fillStyle = 'red';
         ctx.font = '50px Arial';
         ctx.fillText('Game Over', canvas.width / 2 - 150, canvas.height / 2);
-        ctx.fillStyle = 'white';
         ctx.font = '20px Arial';
         ctx.fillText('Click to Restart', canvas.width / 2 - 80, canvas.height / 2 + 40);
     }
@@ -61,7 +100,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         spawnInterval = 1000;
         elementosPorNivel = 0;
         gameOver = false;
-        elementos.length = 0; // Vaciar el array de elementos
+        elementos.length = 0;
         clearInterval(spawnTimer);
         spawnTimer = setInterval(addElemento, spawnInterval);
         requestAnimationFrame(gameLoop);
@@ -69,6 +108,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function gameLoop() {
         if (!gameOver) {
+            updateElementos();
             drawElementos();
             requestAnimationFrame(gameLoop);
         } else {
@@ -85,11 +125,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const y = event.clientY - rect.top;
             elementos.forEach((elemento, index) => {
                 if (x > elemento.x && x < elemento.x + 100 && y > elemento.y && y < elemento.y + 100) {
-                    elemento.clicked = true; // Cambia la imagen al hacer clic
+                    elemento.clicked = true;
                     setTimeout(() => {
                         elementos.splice(index, 1);
-                        elementosPorNivel--; // Disminuir el conteo de elementos por nivel
-                    }, 200); // Elimina el elemento después de 200 ms
+                        elementosPorNivel--;
+                    }, 200);
                     score++;
                     if (score % 10 === 0) {
                         level++;
