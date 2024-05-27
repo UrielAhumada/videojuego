@@ -2,7 +2,6 @@
 body {
     background-color: black;
     /* Fondo negro */
-    cursor: url('assets/images/puntero.png') 16 16, auto; /* Establece un puntero personalizado */
     color: white;
     /* Texto blanco para contrastar con el fondo negro */
 }
